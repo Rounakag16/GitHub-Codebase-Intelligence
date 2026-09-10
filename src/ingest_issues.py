@@ -58,8 +58,9 @@ def load_into_astra(documents: list[Document]) -> None:
         namespace=os.environ.get("ASTRA_DB_KEYSPACE"),
     )
 
-    ids = vector_store.add_documents(documents)
-    print(f"Loaded {len(ids)} issues into Astra DB collection '{COLLECTION_NAME}'.")
+    ids = [f"issue-{doc.metadata['issue_number']}" for doc in documents]
+    added_ids = vector_store.add_documents(documents, ids=ids)
+    print(f"Loaded {len(added_ids)} issues into Astra DB collection '{COLLECTION_NAME}'.")
 
 
 if __name__ == "__main__":
