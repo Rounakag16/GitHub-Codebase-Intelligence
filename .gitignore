@@ -1,0 +1,21 @@
+# Environment
+.env
+venv/
+.venv/
+__pycache__/
+*.pyc
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+
+# Data / caches (repos you ingest, local vector store dumps, etc.)
+data/
+*.db
+*.sqlite3
+
+# Logs
+*.log

@@ -1,0 +1,7 @@
+python-dotenv
+langchain
+langchain-google-genai
+langchain-community
+astrapy
+google-genai
+PyGithub
