@@ -20,9 +20,9 @@ def check_gemini():
     print("Gemini:", resp.text.strip())
 
 def check_github():
-    from github import Github
+    from github import Auth, Github
 
-    gh = Github(os.environ["GITHUB_TOKEN"])
+    gh = Github(auth=Auth.Token(os.environ["GITHUB_TOKEN"]))
     user = gh.get_user()
     print("GitHub: authenticated as", user.login)
 

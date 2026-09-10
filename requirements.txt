@@ -2,6 +2,7 @@ python-dotenv
 langchain
 langchain-google-genai
 langchain-community
+langchain-astradb
 astrapy
 google-genai
 PyGithub

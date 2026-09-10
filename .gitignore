@@ -17,5 +17,10 @@ data/
 *.db
 *.sqlite3
 
+# Local project tracking docs — not for the public repo
+PROJECT_CONTEXT.md
+CHAT_STATE.md
+PROCESS.md
+
 # Logs
 *.log
