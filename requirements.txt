@@ -1,6 +1,8 @@
 python-dotenv
 langchain
+langgraph
 langchain-google-genai
+langchain-ollama
 langchain-community
 langchain-astradb
 astrapy
