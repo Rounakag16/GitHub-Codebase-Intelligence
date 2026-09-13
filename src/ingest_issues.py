@@ -41,6 +41,7 @@ def fetch_issues(repo_name: str) -> list[Document]:
                     "issue_number": issue.number,
                     "url": issue.html_url,
                     "state": issue.state,
+                    "citation": f"Issue #{issue.number}, {issue.html_url}",
                 },
             )
         )

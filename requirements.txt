@@ -8,3 +8,5 @@ langchain-astradb
 astrapy
 google-genai
 PyGithub
+fastapi
+uvicorn

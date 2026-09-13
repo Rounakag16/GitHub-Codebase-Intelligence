@@ -26,30 +26,37 @@ from langchain_ollama import ChatOllama
 
 load_dotenv()
 
+# Holds both GitHub issues and source code chunks (Phase 3), distinguished
+# by metadata["source"] ("github_issue" or "code"). Name kept as-is
+# (rather than renamed) so existing ingested issues don't need a
+# collection migration — the name is legacy, the collection is now
+# general-purpose.
 COLLECTION_NAME = "github_issues"
 NOTES_FILE = "notes.txt"
 
 SYSTEM_PROMPT = (
     "You are a helpful assistant that answers questions about a GitHub "
-    "repository. Right now you only have access to this repository's "
-    "GitHub issues — you do NOT have access to its source code. "
-    "Always use the search_github_issues tool before answering a question "
-    "that could relate to a bug or feature request — do not guess. Your "
-    "answer may combine several separate facts (e.g. what currently "
-    "works, and what's missing). Treat each fact in your answer "
-    "independently: for every individual fact that comes from a "
-    "retrieved issue, cite that issue's number and URL right next to it — "
-    "even if the question's main topic is something else, and even if "
-    "another part of the same answer already has a citation. Never let "
-    "one cited fact make a nearby uncited fact look sourced by "
-    "association. If nothing relevant is found in the issues, say so "
-    "plainly. "
-    "Critically: if a question asks about implementation details, function "
-    "signatures, arguments, return values, or how code actually works, and "
-    "that information is not explicitly stated in a retrieved issue, do "
-    "NOT invent or guess an answer — clearly say you don't have access to "
-    "the source code and cannot confirm that detail. A confident wrong "
-    "answer is much worse than admitting you don't know."
+    "repository, grounded in its GitHub issues and its source code "
+    "(individual functions, classes, and methods), which you can search "
+    "with the search_repo tool. Always use search_repo before answering a "
+    "question that could relate to a bug, a feature request, or how the "
+    "code actually works — do not guess. Your answer may combine several "
+    "separate facts (e.g. what currently works, and what's missing, or a "
+    "behavior described in an issue plus how the code implements it). "
+    "Treat each fact in your answer independently: for every individual "
+    "fact that comes from a retrieved issue or code chunk, cite it right "
+    "next to that fact, using exactly the citation text attached to the "
+    "retrieved chunk — even if the question's main topic is something "
+    "else, and even if another part of the same answer already has a "
+    "citation. Never let one cited fact make a nearby uncited fact look "
+    "sourced by association. "
+    "Critically: if a question needs information that isn't explicitly "
+    "present in anything search_repo actually returned — an "
+    "implementation detail, a behavior, a function signature, or "
+    "anything else — do NOT invent or guess an answer. Say plainly that "
+    "you don't have grounding for that detail in the retrieved issues or "
+    "code. A confident wrong answer is much worse than admitting you "
+    "don't know."
 )
 
 
@@ -63,18 +70,26 @@ def get_retriever_tool():
         token=os.environ["ASTRA_DB_APPLICATION_TOKEN"],
         namespace=os.environ.get("ASTRA_DB_KEYSPACE"),
     )
-    retriever = vector_store.as_retriever(search_kwargs={"k": 3})
-    document_prompt = PromptTemplate.from_template(
-        "{page_content}\n(Issue #{issue_number}, {url})"
-    )
+    # k raised from 3 to 5: a single question can now need both a
+    # relevant issue and the relevant code chunk (two different
+    # documents) to answer well, where before only one document type
+    # existed.
+    retriever = vector_store.as_retriever(search_kwargs={"k": 5})
+    # Issues and code chunks have different metadata shapes (issue_number
+    # vs. file_path/name/line numbers), so each ingestion script
+    # precomputes a single "citation" string at ingestion time. That lets
+    # this one template stay uniform across both document types instead
+    # of needing conditional formatting per source type.
+    document_prompt = PromptTemplate.from_template("{page_content}\n({citation})")
     return create_retriever_tool(
         retriever,
-        name="search_github_issues",
+        name="search_repo",
         description=(
-            "Search this repository's GitHub issues. Use this whenever the "
-            "question might relate to a known bug, limitation, or feature "
-            "request — i.e. almost always, before answering from general "
-            "knowledge."
+            "Search this repository's GitHub issues and source code "
+            "(functions, classes, methods). Use this whenever the "
+            "question might relate to a known bug, limitation, feature "
+            "request, or how the code actually works — i.e. almost "
+            "always, before answering from general knowledge."
         ),
         document_prompt=document_prompt,
     )
@@ -108,7 +123,7 @@ if __name__ == "__main__":
     print(f"Using chat provider: {provider}")
     agent = build_agent()
     messages = []
-    print("Ask a question about the repo's issues (type 'exit' to quit).")
+    print("Ask a question about the repo's issues and code (type 'exit' to quit).")
     while True:
         query = input("\n> ")
         if query.strip().lower() in ("exit", "quit"):
