@@ -1,0 +1,16 @@
+{
+    "messages": [
+        {
+            "role": "user",
+            "content": "Can I add a task?"
+        },
+        {
+            "role": "assistant",
+            "content": "Yes. The repository provides a `TaskManager` class that lets you create new tasks.  \nCall its `add_task` method, passing a title and optionally a priority and due date:\n\n```python\nfrom task_manager.manager import TaskManager\n\nmanager = TaskManager()\nnew_task = manager.add_task(\n    title=\"Write tests\",\n    priority=\"high\",          # optional, defaults to \"medium\"\n    due_date=\"2024-10-01\"     # optional\n)\nprint(new_task.id)   # e.g., 1\n```\n\nThe method creates a `Task` object, assigns it a unique ID, appends it to the stored list, and persists the updated list to the JSON file.  \nThis behavior is implemented in `task_manager/manager.py`:\n\n```\ndef add_task(self, title: str, priority: str = \"medium\", due_date: Optional[str] = None) -> Task:\n        \"\"\"Create a new task and persist it.\"\"\"\n        tasks = self.storage.load()\n        new_task = Task(\n            id=self.storage.next_id(tasks),\n            title=title,\n            priority=priority,\n            due_date=due_date,\n        )\n        tasks.append(new_task)\n        self.storage.save(tasks)\n        return new_task\n(task_manager/manager.py:13-24 (TaskManager.add_task), https://github.com/Rounakag16/Sample-Target-Repo/blob/main/task_manager/manager.py#L13-L24)\n```\n\nSo you can add a task by calling this method."
+        },
+        {
+            "role": "user",
+            "content": "What about deleting one?"
+        }
+    ]
+}

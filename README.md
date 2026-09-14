@@ -1,9 +1,9 @@
 # Codebase Intelligence Agent
 
-Status: Phase 3 complete. Issues, source code (AST-based function/class
-chunking), and docs (heading-based chunking) are all ingested, correctly
-retrievable, and answerable through a grounded, source-cited Q&A agent.
-Next: a thin API (FastAPI) and basic UI.
+Status: Phase 4 complete. Issues, source code, and docs are ingested,
+correctly chunked, and answerable through a grounded, source-cited agent
+exposed via a thin FastAPI (`POST /ask`) — verified working single-turn
+and multi-turn against the real target repo. Next: a basic UI.
 
 An AI-powered developer assistant that ingests a GitHub repository and answers
 natural-language questions about its code, docs, and structure with grounded,
