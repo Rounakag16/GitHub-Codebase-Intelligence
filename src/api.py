@@ -26,11 +26,23 @@ Then: POST http://127.0.0.1:8000/ask with a JSON body like
 from typing import Literal
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from src.agent import build_agent
 
 app = FastAPI(title="Codebase Intelligence Agent API")
+
+# Permissive CORS so the static UI (opened as a local file, a different
+# origin from this API) can call /ask from the browser. Fine for local
+# use; would need tightening (specific origins, not "*") before any real
+# deployment — deployment itself is already on the deferred list.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Built once at startup and reused across requests — rebuilding the
 # vector store connection and LLM client on every call would be wasteful,
